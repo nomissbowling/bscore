@@ -41,4 +41,10 @@ xxxxxxxxx9- # 267
 
 xxx9-xxxxxxxx # 267
 
+xxxxxxxxxG/x # 270
+
+xxxxxxxxxG/9 # 269
+
+xxxxxxxxxG/G # 260
+
 # eof test

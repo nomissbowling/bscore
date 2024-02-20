@@ -12,19 +12,32 @@ class Fr(object):
     # n: num, p: pin, f: first, s: second, m: mark (0: no, 1: spare, 2: strike)
     self.q, self.n, self.p, self.f, self.s, self.m = q, -1, -1, -1, -1, 0
 
-  def calc(self, n):
-    self.n = n
-    self.p = self.cal(n)
-    self.p += self.q[n - 1].p if n > 0 else 0
-    return self.p
+  def new_copy_to(self, s):
+    w = Fr(s)
+    s.append(w)
+    w.n, w.p, w.f, w.s, w.m = self.n, self.p, self.f, self.s, self.m
 
-  def cal(self, f):
+  def calc(self, f):
     p = self.f
-    if p < 10: p += self.s
-    u = self.q[f + 1] if f + 1 < len(self.q) else Fr(self.q) # next dummy
-    v = self.q[f + 2] if f + 2 < len(self.q) else Fr(self.q) # next next dummy
-    if self.m > 0: p += u.f
-    if self.m == 2: p += u.s if u.f < 10 else v.f
+    if p < 10:
+      if self.s < 0: raise Exception("no throw second")
+      p += self.s
+    if self.m > 0:
+      # if f + 1 < len(self.q): u = self.q[f + 1]
+      # else: raise Exception("no throw after mark")
+      try: u = self.q[f + 1]
+      except (IndexError, ) as e: raise Exception("no throw after mark")
+      p += u.f
+      if self.m == 2:
+        if u.f < 10:
+          if u.s < 0: raise Exception("no throw second after x")
+          p += u.s
+        else:
+          # if f + 2 < len(self.q): v = self.q[f + 2]
+          # else: raise Exception("no throw after xx")
+          try: v = self.q[f + 2]
+          except (IndexError, ) as e: raise Exception("no throw after xx")
+          p += v.f
     return p
 
   def c(self, f, p):
@@ -67,7 +80,8 @@ def calc_score(q):
   s = []
   for i, f in enumerate(q):
     t = '' if i == 9 else ' '
-    f.calc(i)
+    f.n = i
+    f.p = f.calc(i) + (q[i - 1].p if i > 0 else 0)
     s.append(f'{t}{f}')
     if i == 9: break
   print(' '.join(s))
@@ -86,7 +100,14 @@ def bscore(txt):
     if c == 'x' or c == 'X':
       if p[0] == 1: raise('second x is not allowed')
       else: Fr.new(q, p, 10)
-  calc_score(q)
+  # calc_score(q)
+  for i in range(len(q)):
+    s = deque()
+    for f in islice(q, i, len(q)): f.new_copy_to(s)
+    # print(i, len(q), len(s))
+    try: s[9].calc(9)
+    except (IndexError, Exception, ) as e: break
+    calc_score(s)
 
 def bowling_score(fn=0):
   with open(fn, 'r') as f: # b'...\n' when 'rb'
