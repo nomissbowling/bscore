@@ -12,11 +12,6 @@ class Fr(object):
     # n: num, p: pin, f: first, s: second, m: mark (0: no, 1: spare, 2: strike)
     self.q, self.n, self.p, self.f, self.s, self.m = q, -1, -1, -1, -1, 0
 
-  def new_copy_to(self, s):
-    w = Fr(s)
-    s.append(w)
-    w.n, w.p, w.f, w.s, w.m = self.n, self.p, self.f, self.s, self.m
-
   def calc(self, f):
     p = self.f
     if p < 10:
@@ -101,13 +96,12 @@ def bscore(txt):
       if p[0] == 1: raise('second x is not allowed')
       else: Fr.new(q, p, 10)
   # calc_score(q)
-  for i in range(len(q)):
-    s = deque()
-    for f in islice(q, i, len(q)): f.new_copy_to(s)
-    # print(i, len(q), len(s))
-    try: s[9].calc(9)
+  while True:
+    try: q[9].calc(9)
     except (IndexError, Exception, ) as e: break
-    calc_score(s)
+    calc_score(q)
+    try: q.popleft()
+    except (IndexError, Exception, ) as e: break
 
 def bowling_score(fn=0):
   with open(fn, 'r') as f: # b'...\n' when 'rb'
