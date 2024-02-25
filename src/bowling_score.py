@@ -83,7 +83,8 @@ def calc_score(q):
   # print(' '.join(f'{q[i].p:3d}' for i in range(10)))
   print(' '.join(f'{f.p:3d}' for f in islice(q, 0, 10)))
 
-def bscore(txt):
+def bscore(txt, mode):
+  # mode: False (normal), True (shift score when extra frames)
   q = deque()
   p = [0]
   for c in txt:
@@ -95,15 +96,15 @@ def bscore(txt):
     if c == 'x' or c == 'X':
       if p[0] == 1: raise('second x is not allowed')
       else: Fr.new(q, p, 10)
-  # calc_score(q)
   while True:
     try: q[9].calc(9)
     except (IndexError, Exception, ) as e: break
     calc_score(q)
+    if not mode: break
     try: q.popleft()
     except (IndexError, Exception, ) as e: break
 
-def bowling_score(fn=0):
+def bowling_score(mode, fn=0):
   with open(fn, 'r') as f: # b'...\n' when 'rb'
     while True:
       r = f.readline()
@@ -113,8 +114,8 @@ def bowling_score(fn=0):
       # print(l) # '...\n'
       i = l.find('#')
       if i == 0: continue # comment line
-      elif i < 0: bscore(l) # line
-      else: bscore(l[:i]) # cut comment
+      elif i < 0: bscore(l, mode) # line
+      else: bscore(l[:i], mode) # cut comment
 
 if __name__ == '__main__':
-  bowling_score()
+  bowling_score(False)
